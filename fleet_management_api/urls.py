@@ -18,15 +18,20 @@ from django.contrib import admin
 from django.urls import include, path
 
 from drf_yasg import openapi
+from rest_framework import permissions
 from drf_yasg.views import get_schema_view as swagger_get_schema_view
 
 schema_view = swagger_get_schema_view(
   openapi.Info(
-    title="Documentação para o get de taxis",
+    title="Fleet Management API",
     default_version='1.0.0',
-    description='Api documentada',
+    description='API PARA CONSULTAR LOCALIZAÇÃO DE VEÍCULOS DE UMA EMPRESA DE TAXI',
+    # term_of_service= "https://www.google.com/policies/terms/" , 
+    # contact=openapi.Contact(email= "contact@fleetmanagement.com" ), 
+    # licence=openapi.License(name= "BSD Licença" ),
   ),
   public=True,
+  permission_classes=(permissions.AllowAny,),
 )
 
 
