@@ -6,17 +6,36 @@ from rest_framework.pagination import PageNumberPagination
 from rest_framework.response import Response
 from rest_framework import status
 
+
 from .models import Taxis, Trajectories
 from .serializers import TaxisSerializer, TrajectoriesSerializer
 from .schemas import taxis_list_schema, trajectories_list_schema
-
-import json
 
 
 @api_view(['GET'])
 def get_taxis(request):
     if request.method == 'GET':
         taxis = Taxis.objects.all()                      # Get all objects in Tax's database (It returns a queryset)
+
+        # Aplicar filtro pelo ID ou pela placa
+        filter_by = request.query_params.get('filter_by', None)
+        if filter_by:
+            try:
+                filter_by_id = int(filter_by)
+                taxis = taxis.filter(id=filter_by_id)
+            except ValueError:
+                taxis = taxis.filter(plate__icontains=filter_by)
+
+        # Lógica para aplicar ordenação
+        sort_by = request.query_params.get('sort_by', None)
+        if sort_by:
+            if sort_by.startswith('-'):
+                # Ordenação descendente
+                sort_by_field = sort_by[1:]
+                taxis = taxis.order_by('-' + sort_by_field)
+            else:
+                # Ordenação ascendente
+                taxis = taxis.order_by(sort_by)
 
         paginator = PageNumberPagination()
         paginator.page_size = 10
