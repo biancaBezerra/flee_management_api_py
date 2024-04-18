@@ -6,6 +6,8 @@ from rest_framework.pagination import PageNumberPagination
 from rest_framework.response import Response
 from rest_framework import status
 
+from django.db.models import Q
+
 
 from .models import Taxis, Trajectories
 from .serializers import TaxisSerializer, TrajectoriesSerializer
@@ -36,6 +38,11 @@ def get_taxis(request):
             else:
                 # Ordenação ascendente
                 taxis = taxis.order_by(sort_by)
+
+        # Aplicar busca
+        search = request.query_params.get('search', None)
+        if search:
+          taxis = taxis.filter(Q(id__icontains=search) | Q(plate__icontains=search))
 
         paginator = PageNumberPagination()
         paginator.page_size = 10
