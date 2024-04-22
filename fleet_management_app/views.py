@@ -6,8 +6,7 @@ from rest_framework.pagination import PageNumberPagination
 from rest_framework.response import Response
 from rest_framework import status
 
-from django.db.models import Q
-
+from .utils import TaxiUtils
 
 from .models import Taxis, Trajectories
 from .serializers import TaxisSerializer, TrajectoriesSerializer
@@ -17,48 +16,48 @@ from .schemas import taxis_list_schema, trajectories_list_schema
 @api_view(['GET'])
 def get_taxis(request):
     if request.method == 'GET':
-        taxis = Taxis.objects.all()                      # Get all objects in Tax's database (It returns a queryset)
+        # Instanciar a classe TaxiUtils com o objeto de request
+        taxi_utils = TaxiUtils(request)   
+        
+        # Get request query parameters
+        filter_by = request.query_params.get('filter_by')
+        sort_by = request.query_params.get('sort_by')
+        search = request.query_params.get('search')                 
 
-        # Aplicar filtro pelo ID ou pela placa
-        filter_by = request.query_params.get('filter_by', None)
-        if filter_by:
-            try:
-                filter_by_id = int(filter_by)
-                taxis = taxis.filter(id=filter_by_id)
-            except ValueError:
-                taxis = taxis.filter(plate__icontains=filter_by)
+        # Get page size and page number usando os métodos da classe
+        page_size = taxi_utils.get_page_size()
+        page_number = taxi_utils.get_page_number()
 
-        # Lógica para aplicar ordenação
-        sort_by = request.query_params.get('sort_by', None)
-        if sort_by:
-            if sort_by.startswith('-'):
-                # Ordenação descendente
-                sort_by_field = sort_by[1:]
-                taxis = taxis.order_by('-' + sort_by_field)
-            else:
-                # Ordenação ascendente
-                taxis = taxis.order_by(sort_by)
-
-        # Aplicar busca
-        search = request.query_params.get('search', None)
-        if search:
-          taxis = taxis.filter(Q(id__icontains=search) | Q(plate__icontains=search))
-
+        # Filter, sort, and search taxis usando os métodos da classe
+        taxis = Taxis.objects.all()
+        taxis = taxi_utils.filter_taxis(taxis, filter_by)
+        taxis = taxi_utils.sort_taxis(taxis, sort_by)
+        taxis = taxi_utils.search_taxis(taxis, search)
+        
+        # Paginate the queryset using PageNumberPagination
         paginator = PageNumberPagination()
-        paginator.page_size = 10
-
+        paginator.page_size = page_size
         result_page = paginator.paginate_queryset(taxis, request)
-        serializer = TaxisSerializer(result_page, many=True)       # Serialize the object data into json (Has a 'many' parameter cause it's a queryset)
+
+        # Verificar se a lista de táxis está vazia
+        if not result_page:
+            return Response({'detail': 'Nenhum táxi encontrado.'}, status=status.HTTP_404_NOT_FOUND)
+
+        # Serialize the paginated queryset
+        serializer = TaxisSerializer(result_page, many=True)
+        
+        # Construct response data
         response = paginator.get_paginated_response(serializer.data)
-        # Including additional pagination information at the beginning of the response object
+        
+        # Add current_page and total_pages
         pagination_info = {
             'current_page': paginator.page.number,
             'total_pages': paginator.page.paginator.num_pages
         }
-        # Adding pagination information at the beginning of the response object
         response.data = {**pagination_info, **response.data}
-        return response                   # Return the serialized data
-    
+        
+        return response
+
     return Response(status=status.HTTP_400_BAD_REQUEST)
 get_taxis = taxis_list_schema(method='get')(get_taxis) #um schema personalizado para documentar a visualização de taxis nos swagger
 
