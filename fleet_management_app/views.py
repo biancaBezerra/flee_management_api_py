@@ -66,7 +66,7 @@ get_taxis = taxis_list_schema(method='get')(get_taxis) #um schema personalizado 
 def get_trajectories(request):
     if request.method == 'GET':
         # Instanciar a classe TaxiUtils com o objeto de request
-        trajectories_utils = TrajectoriesUtils (request)
+        trajectories_utils = TrajectoriesUtils(request)
 
         # Get request query parameters
         filter_by = request.query_params.get('filter_by')

@@ -7,7 +7,7 @@ class Taxis(models.Model):
   plate = models.CharField(max_length=20, unique=True)
 
   def str(self):
-    return f"ID: {self.id}, Plate: {self.plate}"
+    return f"ID: {self.id}, Plate: {self.plate}" #retorna os dados string
     
 class Trajectories(models.Model):
   id = models.AutoField(primary_key=True)
