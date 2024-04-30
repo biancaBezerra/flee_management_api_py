@@ -1,11 +1,9 @@
-from django.contrib import admin
-from django.urls import include, path
+from django.urls import path
 
-
-from . import views
-
+from .views import viewsTaxis, viewsTrajectories, viewsLastLocation
 
 urlpatterns = [
-    path('taxis/', views.get_taxis, name='get_all_taxis'),
-    path('trajectories/', views.get_trajectories, name='get_all_trajectories'),
+    path('taxis/', viewsTaxis.get_taxis, name='get_all_taxis'),
+    path('trajectories/', viewsTrajectories.get_trajectories, name='get_all_trajectories'),
+    path('lastlocation/', viewsLastLocation.get_last_location, name='find_last_trajectories'),
 ]
