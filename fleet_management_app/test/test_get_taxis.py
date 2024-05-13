@@ -25,7 +25,7 @@ def test_list_taxis_endpoint(mock_taxis_queryset):
     assert response.status_code == 200
     assert len(response.data['results']) > 0
 
-def test_list_taxis_filter(mock_taxis_queryset):
+def test_list_taxis_filter_by_id(mock_taxis_queryset):
     factory = APIRequestFactory()
 
     # Making a GET request to the endpoint with filter parameter
@@ -37,7 +37,19 @@ def test_list_taxis_filter(mock_taxis_queryset):
     assert len(response.data['results']) == 2
     assert response.data['results'][0]['id'] == 1
 
-def test_list_taxis_sort(mock_taxis_queryset):
+def test_list_taxis_filter_by_plate(mock_taxis_queryset):
+    factory = APIRequestFactory()
+
+    # Making a GET request to the endpoint with filter parameter
+    request = factory.get('/api/taxis/', {'plate': "ABCD-1234"})
+    response = get_taxis(request)
+
+    # Asserting the response data
+    assert response.status_code == 200
+    assert len(response.data['results']) == 2
+    assert response.data['results'][0]['plate'] == "ABCD-1234"
+
+def test_list_taxis_sort_by_id(mock_taxis_queryset):
     factory = APIRequestFactory()
 
     # Making a GET request to the endpoint with sort parameter
@@ -50,7 +62,20 @@ def test_list_taxis_sort(mock_taxis_queryset):
     assert response.data['results'][1]['id'] == 2
     assert response.data['results'][0]['id'] == 1
 
-def test_list_taxis_search(mock_taxis_queryset):
+def test_list_taxis_sort_by_plate(mock_taxis_queryset):
+    factory = APIRequestFactory()
+
+    # Making a GET request to the endpoint with sort parameter
+    request = factory.get('/api/taxis/', {'order_by': '-plate'})
+    response = get_taxis(request)
+
+    # Asserting the response data
+    assert response.status_code == 200
+    assert len(response.data['results']) == 2
+    assert response.data['results'][1]['plate'] == "DEFG-4567"
+    assert response.data['results'][0]['plate'] == "ABCD-1234"
+
+def test_list_taxis_search_by_id(mock_taxis_queryset):
     factory = APIRequestFactory()
 
     # Making a GET request to the endpoint with search parameter
@@ -63,6 +88,20 @@ def test_list_taxis_search(mock_taxis_queryset):
     # Asserting the response data
     assert len(response.data['results']) == 2
     assert response.data['results'][1]['id'] == 2
+
+def test_list_taxis_search_by_plate(mock_taxis_queryset):
+    factory = APIRequestFactory()
+
+    # Making a GET request to the endpoint with search parameter
+    request = factory.get('/api/taxis/', {'plate': "DEFG-4567"})
+    response = get_taxis(request)
+
+    # Asserting the response status code
+    assert response.status_code == 200
+
+    # Asserting the response data
+    assert len(response.data['results']) == 2
+    assert response.data['results'][1]['plate'] == "DEFG-4567"
 
 def test_list_taxis_page_size(mock_taxis_queryset):
     mock_taxis = [Taxis(id=i, plate=f"ABC-{i}") for i in range(1, 21)]  # foram criados 20 taxis mock

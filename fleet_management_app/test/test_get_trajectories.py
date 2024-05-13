@@ -94,7 +94,7 @@ def test_list_trajectories_pagination(mock_trajectories_queryset):
 
     factory = APIRequestFactory()
 
-    request = factory.get('http://localhost:8000/api/taxis/', {'page': 1})
+    request = factory.get('/api/trajectories/', {'page': 1})
     response = get_trajectories(request)
 
     # Asserting the response status code
